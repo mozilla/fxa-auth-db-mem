@@ -1,0 +1,415 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+var P = require('bluebird')
+
+// our data stores
+var accounts = {}
+var uidByNormalizedEmail = {}
+var sessionTokens = {}
+var keyFetchTokens = {}
+var accountResetTokens = {}
+var passwordChangeTokens = {}
+var passwordForgotTokens = {}
+
+module.exports = function (error) {
+
+  function Memory(db) {}
+
+  // CREATE
+  Memory.prototype.createAccount = function (uid, data) {
+    uid = uid.toString('hex')
+    data.normalizedEmail = data.email.toLowerCase()
+    data.createdAt = data.verifierSetAt = Date.now()
+
+    data.devices = {}
+
+    if ( accounts[uid] ) {
+      return P.reject(error.duplicate())
+    }
+
+    if ( uidByNormalizedEmail[data.normalizedEmail] ) {
+      return P.reject(error.duplicate())
+    }
+
+    accounts[uid.toString('hex')] = data
+    uidByNormalizedEmail[data.normalizedEmail] = uid
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.createSessionToken = function (tokenId, sessionToken) {
+    sessionToken.id = tokenId
+    tokenId = tokenId.toString('hex')
+
+    sessionTokens[tokenId] = {
+      data: sessionToken.data,
+      uid: sessionToken.uid,
+      createdAt: sessionToken.createdAt,
+    }
+
+    var account = accounts[sessionToken.uid.toString('hex')]
+    account.devices[tokenId] = sessionToken
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.createKeyFetchToken = function (tokenId, keyFetchToken) {
+    tokenId = tokenId.toString('hex')
+
+    keyFetchTokens[tokenId] = {
+      authKey: keyFetchToken.authKey,
+      uid: keyFetchToken.uid,
+      keyBundle: keyFetchToken.keyBundle,
+      createdAt: keyFetchToken.createdAt,
+    }
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.createPasswordForgotToken = function (tokenId, passwordForgotToken) {
+    tokenId = tokenId.toString('hex')
+
+    passwordForgotTokens[tokenId] = {
+      tokenData: passwordForgotToken.data,
+      uid: passwordForgotToken.uid,
+      passCode: passwordForgotToken.passCode,
+      tries: passwordForgotToken.tries,
+      createdAt: passwordForgotToken.createdAt,
+    }
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.createPasswordChangeToken = function (tokenId, passwordChangeToken) {
+    tokenId = tokenId.toString('hex')
+    passwordChangeTokens[tokenId] = {
+      tokenData: passwordChangeToken.data,
+      uid: passwordChangeToken.uid,
+      createdAt: passwordChangeToken.createdAt,
+    }
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.createAccountResetToken = function (tokenId, accountResetToken) {
+    tokenId = tokenId.toString('hex')
+
+    accountResetTokens[tokenId] = {
+      tokenData: accountResetToken.data,
+      uid: accountResetToken.uid,
+      createdAt: accountResetToken.createdAt,
+    }
+
+    return P.resolve({})
+  }
+
+  // DELETE
+
+  // The lazy way
+  // uid is a hex string (not a buffer)
+  function deleteUid(uid, collection) {
+    var keys = Object.keys(collection)
+    for (var i = 0; i < keys.length; i++) {
+      if ( keys[i] === uid ) {
+        delete collection[keys[i]]
+      }
+    }
+  }
+
+  Memory.prototype.deleteSessionToken = function (tokenId) {
+    tokenId = tokenId.toString('hex')
+
+    if ( !sessionTokens[tokenId] ) {
+      return P.resolve({})
+    }
+
+    var sessionToken = sessionTokens[tokenId]
+    delete sessionTokens[tokenId]
+
+    var account = accounts[sessionToken.uid.toString('hex')]
+    delete account.devices[tokenId]
+    return P.resolve({})
+  }
+
+  Memory.prototype.deleteKeyFetchToken = function (tokenId) {
+    delete keyFetchTokens[tokenId.toString('hex')]
+    return P.resolve({})
+  }
+
+  Memory.prototype.deleteAccountResetToken = function (tokenId) {
+    delete accountResetTokens[tokenId.toString('hex')]
+    return P.resolve({})
+  }
+
+  Memory.prototype.deletePasswordForgotToken = function (tokenId) {
+    delete passwordForgotTokens[tokenId.toString('hex')]
+    return P.resolve({})
+  }
+
+  Memory.prototype.deletePasswordChangeToken = function (tokenId) {
+    delete passwordChangeTokens[tokenId.toString('hex')]
+    return P.resolve({})
+  }
+
+  // READ
+
+  Memory.prototype.accountExists = function (email) {
+    email = email.toString('utf8').toLowerCase()
+    if ( uidByNormalizedEmail[email] ) {
+      return P.resolve({})
+    }
+    return P.reject(error.notFound())
+  }
+
+  Memory.prototype.accountDevices = function (uid) {
+    return this.account(uid)
+      .then(function(account) {
+        var devices = Object.keys(account.devices).map(
+          function (id) {
+            return account.devices[id]
+          }
+        )
+        return P.resolve(devices)
+      })
+  }
+
+  // account():
+  //
+  // Takes:
+  //   - uid - a Buffer()
+  //
+  // Returns:
+  //   - the account if found
+  //   - throws 'notFound' if not found
+  Memory.prototype.account = function (uid) {
+    uid = uid.toString('hex')
+    if ( accounts[uid] ) {
+      return P.resolve(accounts[uid])
+    }
+    return P.reject(error.notFound())
+  }
+
+  // emailRecord():
+  //
+  // Takes:
+  //   - email - a string of hex encoded characters
+  //
+  // Returns:
+  //   - the account if found
+  //   - throws 'notFound' if not found
+  Memory.prototype.emailRecord = function (email) {
+    email = email.toString('utf8').toLowerCase()
+    if ( uidByNormalizedEmail[email] ) {
+      return P.resolve(accounts[uidByNormalizedEmail[email]])
+    }
+    return P.reject(error.notFound())
+  }
+
+  // sessionToken()
+  //
+  // Takes:
+  //   - id - a string of hex chars
+  Memory.prototype.sessionToken = function (id) {
+    id = id.toString('hex')
+
+    if ( !sessionTokens[id] ) {
+      return P.reject(error.notFound())
+    }
+
+    var item = {}
+
+    item.tokenData = sessionTokens[id].data
+    item.uid = sessionTokens[id].uid
+    item.createdAt = sessionTokens[id].createdAt
+
+    var accountId = sessionTokens[id].uid.toString('hex')
+    var account = accounts[accountId]
+    item.emailVerified = account.emailVerified
+    item.email = account.email
+    item.emailCode = account.emailCode
+    item.verifierSetAt = account.verifierSetAt
+    item.locale = account.locale
+
+    return P.resolve(item)
+  }
+
+  Memory.prototype.keyFetchToken = function (id) {
+    id = id.toString('hex')
+
+    if ( !keyFetchTokens[id] ) {
+      return P.reject(error.notFound())
+    }
+
+    var item = {}
+
+    var token = keyFetchTokens[id]
+    item.authKey = token.authKey
+    item.uid = token.uid
+    item.keyBundle = token.keyBundle
+    item.createdAt = token.createdAt
+
+    var accountId = token.uid.toString('hex')
+    var account = accounts[accountId]
+    item.emailVerified = account.emailVerified
+    item.verifierSetAt = account.verifierSetAt
+
+    return P.resolve(item)
+  }
+
+  Memory.prototype.passwordForgotToken = function (id) {
+    id = id.toString('hex')
+
+    if ( !passwordForgotTokens[id] ) {
+      return P.reject(error.notFound())
+    }
+
+    var item = {}
+
+    var token = passwordForgotTokens[id]
+    item.tokenData = token.tokenData
+    item.uid = token.uid
+    item.passCode = token.passCode
+    item.tries = token.tries
+    item.createdAt = token.createdAt
+
+    var accountId = token.uid.toString('hex')
+    var account = accounts[accountId]
+    item.email = account.email
+    item.verifierSetAt = account.verifierSetAt
+
+    return P.resolve(item)
+  }
+
+  Memory.prototype.passwordChangeToken = function (id) {
+    id = id.toString('hex')
+
+    if ( !passwordChangeTokens[id] ) {
+      return P.reject(error.notFound())
+    }
+
+    var item = {}
+
+    var token = passwordChangeTokens[id]
+    item.tokenData = token.tokenData
+    item.uid = token.uid
+    item.createdAt = token.createdAt
+
+    var accountId = token.uid.toString('hex')
+    var account = accounts[accountId]
+    item.verifierSetAt = account.verifierSetAt
+
+    return P.resolve(item)
+  }
+
+  Memory.prototype.accountResetToken = function (id) {
+    id = id.toString('hex')
+
+    if ( !accountResetTokens[id] ) {
+      return P.reject(error.notFound())
+    }
+
+    var item = {}
+
+    var token = accountResetTokens[id]
+    item.tokenData = token.tokenData
+    item.uid = token.uid
+    item.createdAt = token.createdAt
+
+    var accountId = token.uid.toString('hex')
+    var account = accounts[accountId]
+    item.verifierSetAt = account.verifierSetAt
+
+    return P.resolve(item)
+  }
+
+  // BATCH
+  Memory.prototype.verifyEmail = function (uid) {
+    uid = uid.toString('hex')
+
+    if ( accounts[uid] ) {
+      accounts[uid].emailVerified = 1
+    }
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.forgotPasswordVerified = function (tokenId, accountResetToken) {
+    return P.all([
+      this.deletePasswordForgotToken(tokenId),
+      this.createAccountResetToken(accountResetToken.tokenId, accountResetToken),
+      this.verifyEmail(accountResetToken.uid)
+    ])
+  }
+
+  Memory.prototype.resetAccount = function (uid, data) {
+    uid = uid.toString('hex')
+
+    var account = accounts[uid]
+    if ( account ) {
+      deleteUid(uid, sessionTokens)
+      deleteUid(uid, keyFetchTokens)
+      deleteUid(uid, accountResetTokens)
+      deleteUid(uid, passwordChangeTokens)
+      deleteUid(uid, passwordForgotTokens)
+
+      account.verifyHash = data.verifyHash
+      account.authSalt = data.authSalt
+      account.wrapWrapKb = data.wrapWrapKb
+      account.verifierSetAt = Date.now()
+      account.verifierVersion = data.verifierVersion
+      account.devices = {}
+    }
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.deleteAccount = function (uid) {
+    uid = uid.toString('hex')
+
+    var account = accounts[uid]
+    if ( account ) {
+      deleteUid(uid, sessionTokens)
+      deleteUid(uid, keyFetchTokens)
+      deleteUid(uid, accountResetTokens)
+      deleteUid(uid, passwordChangeTokens)
+      deleteUid(uid, passwordForgotTokens)
+
+      delete uidByNormalizedEmail[account.normalizedEmail]
+      delete accounts[uid]
+    }
+
+    return P.resolve({})
+  }
+
+  Memory.prototype.updateLocale = function (uid, data) {
+    var account = accounts[uid.toString('hex')]
+    if (!account) { return P.reject(error.notFound()) }
+    account.locale = data.locale
+    return P.resolve({})
+  }
+
+  Memory.prototype.updatePasswordForgotToken = function (id, data) {
+    var token = passwordForgotTokens[id.toString('hex')]
+    if (!token) { return P.reject(error.notFound()) }
+    token.tries = data.tries
+    return P.resolve({})
+  }
+
+  // UTILITY FUNCTIONS
+
+  Memory.prototype.ping = function () {
+    return P.resolve({})
+  }
+
+  Memory.prototype.close = function () {
+    return P.resolve({})
+  }
+
+  Memory.connect = function(options) {
+    return P.resolve(new Memory())
+  }
+
+  return Memory
+}
