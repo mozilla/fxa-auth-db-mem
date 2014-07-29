@@ -347,20 +347,20 @@ module.exports = function (error) {
     uid = uid.toString('hex')
 
     var account = accounts[uid]
-    if ( account ) {
-      deleteUid(uid, sessionTokens)
-      deleteUid(uid, keyFetchTokens)
-      deleteUid(uid, accountResetTokens)
-      deleteUid(uid, passwordChangeTokens)
-      deleteUid(uid, passwordForgotTokens)
+    if (!account) { return P.reject(error.notFound()) }
 
-      account.verifyHash = data.verifyHash
-      account.authSalt = data.authSalt
-      account.wrapWrapKb = data.wrapWrapKb
-      account.verifierSetAt = Date.now()
-      account.verifierVersion = data.verifierVersion
-      account.devices = {}
-    }
+    deleteUid(uid, sessionTokens)
+    deleteUid(uid, keyFetchTokens)
+    deleteUid(uid, accountResetTokens)
+    deleteUid(uid, passwordChangeTokens)
+    deleteUid(uid, passwordForgotTokens)
+
+    account.verifyHash = data.verifyHash
+    account.authSalt = data.authSalt
+    account.wrapWrapKb = data.wrapWrapKb
+    account.verifierSetAt = Date.now()
+    account.verifierVersion = data.verifierVersion
+    account.devices = {}
 
     return P.resolve({})
   }
