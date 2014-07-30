@@ -133,6 +133,11 @@ module.exports = function (error) {
   function deleteByUid(uid, collection) {
     Object.keys(collection).forEach(function(key) {
       var item = collection[key]
+
+      if (!item.uid) {
+        throw new Error('No "uid" property in collection item')
+      }
+
       if (item.uid.toString('hex') === uid) {
         delete collection[key]
     }
