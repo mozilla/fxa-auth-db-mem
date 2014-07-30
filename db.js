@@ -43,6 +43,10 @@ module.exports = function (error) {
     sessionToken.id = tokenId
     tokenId = tokenId.toString('hex')
 
+    if ( sessionTokens[tokenId] ) {
+      return P.reject(error.duplicate())
+    }
+
     sessionTokens[tokenId] = {
       data: sessionToken.data,
       uid: sessionToken.uid,
@@ -58,6 +62,10 @@ module.exports = function (error) {
   Memory.prototype.createKeyFetchToken = function (tokenId, keyFetchToken) {
     tokenId = tokenId.toString('hex')
 
+    if ( keyFetchTokens[tokenId] ) {
+      return P.reject(error.duplicate())
+    }
+
     keyFetchTokens[tokenId] = {
       authKey: keyFetchToken.authKey,
       uid: keyFetchToken.uid,
@@ -70,6 +78,10 @@ module.exports = function (error) {
 
   Memory.prototype.createPasswordForgotToken = function (tokenId, passwordForgotToken) {
     tokenId = tokenId.toString('hex')
+
+    if ( passwordForgotTokens[tokenId] ) {
+      return P.reject(error.duplicate())
+    }
 
     passwordForgotTokens[tokenId] = {
       tokenData: passwordForgotToken.data,
@@ -84,6 +96,11 @@ module.exports = function (error) {
 
   Memory.prototype.createPasswordChangeToken = function (tokenId, passwordChangeToken) {
     tokenId = tokenId.toString('hex')
+
+    if ( passwordChangeTokens[tokenId] ) {
+      return P.reject(error.duplicate())
+    }
+
     passwordChangeTokens[tokenId] = {
       tokenData: passwordChangeToken.data,
       uid: passwordChangeToken.uid,
@@ -95,6 +112,10 @@ module.exports = function (error) {
 
   Memory.prototype.createAccountResetToken = function (tokenId, accountResetToken) {
     tokenId = tokenId.toString('hex')
+
+    if ( accountResetTokens[tokenId] ) {
+      return P.reject(error.duplicate())
+    }
 
     accountResetTokens[tokenId] = {
       tokenData: accountResetToken.data,
@@ -326,13 +347,13 @@ module.exports = function (error) {
 
   // BATCH
   Memory.prototype.verifyEmail = function (uid) {
-    uid = uid.toString('hex')
-
-    if ( accounts[uid] ) {
-      accounts[uid].emailVerified = 1
-    }
-
-    return P.resolve({})
+    return this.account(uid)
+      .then(
+        function (account) {
+          account.emailVerified = 1
+          return {}
+        }
+      )
   }
 
   Memory.prototype.forgotPasswordVerified = function (tokenId, accountResetToken) {
@@ -344,50 +365,53 @@ module.exports = function (error) {
   }
 
   Memory.prototype.resetAccount = function (uid, data) {
-    uid = uid.toString('hex')
+    return this.account(uid)
+      .then(
+        function (account) {
+          uid = uid.toString('hex')
+          deleteUid(uid, sessionTokens)
+          deleteUid(uid, keyFetchTokens)
+          deleteUid(uid, accountResetTokens)
+          deleteUid(uid, passwordChangeTokens)
+          deleteUid(uid, passwordForgotTokens)
 
-    var account = accounts[uid]
-    if ( account ) {
-      deleteUid(uid, sessionTokens)
-      deleteUid(uid, keyFetchTokens)
-      deleteUid(uid, accountResetTokens)
-      deleteUid(uid, passwordChangeTokens)
-      deleteUid(uid, passwordForgotTokens)
-
-      account.verifyHash = data.verifyHash
-      account.authSalt = data.authSalt
-      account.wrapWrapKb = data.wrapWrapKb
-      account.verifierSetAt = Date.now()
-      account.verifierVersion = data.verifierVersion
-      account.devices = {}
-    }
-
-    return P.resolve({})
+          account.verifyHash = data.verifyHash
+          account.authSalt = data.authSalt
+          account.wrapWrapKb = data.wrapWrapKb
+          account.verifierSetAt = Date.now()
+          account.verifierVersion = data.verifierVersion
+          account.devices = {}
+          return []
+        }
+      )
   }
 
   Memory.prototype.deleteAccount = function (uid) {
-    uid = uid.toString('hex')
+    return this.account(uid)
+      .then(
+        function (account) {
+          uid = uid.toString('hex')
+          deleteUid(uid, sessionTokens)
+          deleteUid(uid, keyFetchTokens)
+          deleteUid(uid, accountResetTokens)
+          deleteUid(uid, passwordChangeTokens)
+          deleteUid(uid, passwordForgotTokens)
 
-    var account = accounts[uid]
-    if ( account ) {
-      deleteUid(uid, sessionTokens)
-      deleteUid(uid, keyFetchTokens)
-      deleteUid(uid, accountResetTokens)
-      deleteUid(uid, passwordChangeTokens)
-      deleteUid(uid, passwordForgotTokens)
-
-      delete uidByNormalizedEmail[account.normalizedEmail]
-      delete accounts[uid]
-    }
-
-    return P.resolve({})
+          delete uidByNormalizedEmail[account.normalizedEmail]
+          delete accounts[uid]
+          return []
+        }
+      )
   }
 
   Memory.prototype.updateLocale = function (uid, data) {
-    var account = accounts[uid.toString('hex')]
-    if (!account) { return P.reject(error.notFound()) }
-    account.locale = data.locale
-    return P.resolve({})
+    return this.account(uid)
+      .then(
+        function (account) {
+          account.locale = data.locale
+          return {}
+        }
+      )
   }
 
   Memory.prototype.updatePasswordForgotToken = function (id, data) {
