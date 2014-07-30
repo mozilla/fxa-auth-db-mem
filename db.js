@@ -130,13 +130,18 @@ module.exports = function (error) {
 
   // The lazy way
   // uid is a hex string (not a buffer)
-  function deleteUid(uid, collection) {
-    var keys = Object.keys(collection)
-    for (var i = 0; i < keys.length; i++) {
-      if ( keys[i] === uid ) {
-        delete collection[keys[i]]
+  function deleteByUid(uid, collection) {
+    Object.keys(collection).forEach(function(key) {
+      var item = collection[key]
+
+      if (!item.uid) {
+        throw new Error('No "uid" property in collection item')
       }
+
+      if (item.uid.toString('hex') === uid) {
+        delete collection[key]
     }
+    })
   }
 
   Memory.prototype.deleteSessionToken = function (tokenId) {
@@ -369,11 +374,11 @@ module.exports = function (error) {
       .then(
         function (account) {
           uid = uid.toString('hex')
-          deleteUid(uid, sessionTokens)
-          deleteUid(uid, keyFetchTokens)
-          deleteUid(uid, accountResetTokens)
-          deleteUid(uid, passwordChangeTokens)
-          deleteUid(uid, passwordForgotTokens)
+          deleteByUid(uid, sessionTokens)
+          deleteByUid(uid, keyFetchTokens)
+          deleteByUid(uid, accountResetTokens)
+          deleteByUid(uid, passwordChangeTokens)
+          deleteByUid(uid, passwordForgotTokens)
 
           account.verifyHash = data.verifyHash
           account.authSalt = data.authSalt
@@ -391,11 +396,11 @@ module.exports = function (error) {
       .then(
         function (account) {
           uid = uid.toString('hex')
-          deleteUid(uid, sessionTokens)
-          deleteUid(uid, keyFetchTokens)
-          deleteUid(uid, accountResetTokens)
-          deleteUid(uid, passwordChangeTokens)
-          deleteUid(uid, passwordForgotTokens)
+          deleteByUid(uid, sessionTokens)
+          deleteByUid(uid, keyFetchTokens)
+          deleteByUid(uid, accountResetTokens)
+          deleteByUid(uid, passwordChangeTokens)
+          deleteByUid(uid, passwordForgotTokens)
 
           delete uidByNormalizedEmail[account.normalizedEmail]
           delete accounts[uid]
