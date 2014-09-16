@@ -2,15 +2,18 @@
   "name": "fxa-auth-db-mem",
   "version": "0.18.2",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "",
-    "start": "node index.js"
+    "start": "node bin/server.js",
+    "test": "node test/index.js",
+    "outdated": "npm outdated --depth 0",
+    "shrinkwrap": "npm run outdated && npm shrinkwrap --dev && grunt validate-shrinkwrap"
   },
-  "author": "",
+  "author": "Mozilla",
   "license": "MPL 2.0",
   "dependencies": {
     "bluebird": "2.2.2",
-    "fxa-auth-db-server": "git://github.com/dannycoates/fxa-auth-db-server.git#reverse"
+    "bunyan": "0.23.1",
+    "convict": "^0.4.2",
+    "fxa-auth-db-server": "git://github.com/mozilla/fxa-auth-db-server.git#reverse"
   }
 }
