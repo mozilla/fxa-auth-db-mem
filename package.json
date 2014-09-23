@@ -10,12 +10,12 @@
   },
   "author": "Mozilla (https://mozilla.org/)",
   "license": {
-    "type": "MPL 2.0",
+    "name": "MPL 2.0",
     "url": "https://raw.githubusercontent.com/mozilla/fxa-auth-db-mem/master/LICENSE"
   },
-  "repository": "mozilla/fxa-auth-db-mem",
   "dependencies": {
     "bluebird": "2.2.2",
     "fxa-auth-db-server": "git://github.com/dannycoates/fxa-auth-db-server.git#reverse"
-  }
+  },
+  "repository": "mozilla/fxa-auth-db-mem"
 }
