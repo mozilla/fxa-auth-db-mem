@@ -1,14 +1,19 @@
 {
   "name": "fxa-auth-db-mem",
   "version": "0.18.2",
-  "description": "",
+  "description": "Memory backend (for testing) for the fxa-auth-db-server",
   "main": "index.js",
   "scripts": {
     "test": "",
-    "start": "node index.js"
+    "start": "node index.js",
+    "outdated": "npm outdated --depth 0"
   },
-  "author": "",
-  "license": "MPL 2.0",
+  "author": "Mozilla (https://mozilla.org/)",
+  "license": {
+    "type": "MPL 2.0",
+    "url": "https://raw.githubusercontent.com/mozilla/fxa-auth-db-mem/master/LICENSE"
+  },
+  "repository": "mozilla/fxa-auth-db-mem",
   "dependencies": {
     "bluebird": "2.2.2",
     "fxa-auth-db-server": "git://github.com/dannycoates/fxa-auth-db-server.git#reverse"
