@@ -13,7 +13,7 @@ var accountResetTokens = {}
 var passwordChangeTokens = {}
 var passwordForgotTokens = {}
 
-module.exports = function (error) {
+module.exports = function (log, error) {
 
   function Memory(db) {}
 
