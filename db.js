@@ -357,6 +357,9 @@ module.exports = function (log, error) {
         function (account) {
           account.emailVerified = 1
           return {}
+        },
+        function (err) {
+          return {}
         }
       )
   }
