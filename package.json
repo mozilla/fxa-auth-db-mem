@@ -5,7 +5,7 @@
   "main": "bin/server.js",
   "repository": "mozilla/fxa-auth-db-mem",
   "scripts": {
-    "test": "node test/local/db_tests.js",
+    "test": "node test/backend/db_tests.js",
     "start": "node bin/server.js",
     "outdated": "npm outdated --depth 0"
   },
