@@ -5,7 +5,7 @@
   "main": "bin/server.js",
   "repository": "mozilla/fxa-auth-db-mem",
   "scripts": {
-    "test": "./scripts/tap-coverage.js test/backend test/local",
+    "test": "grunt && ./scripts/tap-coverage.js test/backend test/local",
     "start": "node bin/server.js",
     "outdated": "npm outdated --depth 0"
   },
