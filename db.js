@@ -39,6 +39,20 @@ module.exports = function (log, error) {
     return P.resolve({})
   }
 
+  Memory.prototype.checkPassword = function (uid, hash) {
+    return this.account(uid)
+      .then(function(account) {
+        if(account.verifyHash.toString('hex') === hash.verifyHash.toString('hex')) {
+          return P.resolve(account)
+        }
+        else {
+          return P.reject(error.notFound())
+        }
+      }, function() {
+        return P.reject(error.notFound())
+      })
+  }
+
   Memory.prototype.createSessionToken = function (tokenId, sessionToken) {
     sessionToken.id = tokenId
     tokenId = tokenId.toString('hex')
