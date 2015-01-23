@@ -83,6 +83,10 @@ module.exports = function (log, error) {
       return P.reject(error.duplicate())
     }
 
+    // Delete any passwordForgotTokens for this uid (since we're only
+    // allowed one at a time).
+    deleteByUid(passwordForgotToken.uid.toString('hex'), passwordForgotTokens)
+
     passwordForgotTokens[tokenId] = {
       tokenData: passwordForgotToken.data,
       uid: passwordForgotToken.uid,
@@ -101,6 +105,10 @@ module.exports = function (log, error) {
       return P.reject(error.duplicate())
     }
 
+    // Delete any passwordChangeTokens for this uid (since we're only
+    // allowed one at a time).
+    deleteByUid(passwordChangeToken.uid.toString('hex'), passwordChangeTokens)
+
     passwordChangeTokens[tokenId] = {
       tokenData: passwordChangeToken.data,
       uid: passwordChangeToken.uid,
@@ -116,6 +124,10 @@ module.exports = function (log, error) {
     if ( accountResetTokens[tokenId] ) {
       return P.reject(error.duplicate())
     }
+
+    // Delete any accountResetTokens for this uid (since we're only
+    // allowed one at a time).
+    deleteByUid(accountResetToken.uid.toString('hex'), accountResetTokens)
 
     accountResetTokens[tokenId] = {
       tokenData: accountResetToken.data,
