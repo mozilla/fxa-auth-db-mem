@@ -13,6 +13,10 @@ notifications:
 before_install:
   - npm config set spin false
 
-script:
+before_script:
+  - npm i grunt-cli -g
   - npm run outdated
+  - grunt validate-shrinkwrap --force
+
+script:
   - npm test
