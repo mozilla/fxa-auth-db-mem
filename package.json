@@ -2,7 +2,7 @@
   "name": "fxa-auth-db-mem",
   "version": "0.18.2",
   "description": "Memory backend (for testing) for the fxa-auth-db-server",
-  "main": "bin/server.js",
+  "main": "index.js",
   "repository": "mozilla/fxa-auth-db-mem",
   "scripts": {
     "test": "grunt && ./scripts/tap-coverage.js test/backend test/local",
