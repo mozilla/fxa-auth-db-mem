@@ -26,4 +26,15 @@ DB.connect(config)
     server.on('error', function (err) {
       log.error({ op: 'server.start', err: { message: err.message } })
     })
+    server.on('success', function (d) {
+      log.info(d)
+    })
+    server.on('failure', function (err) {
+      if (err.statusCode >= 500) {
+        log.error(err)
+      }
+      else {
+        log.warn(err)
+      }
+    })
   })
