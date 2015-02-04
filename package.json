@@ -18,7 +18,7 @@
     "bluebird": "2.2.2",
     "bunyan": "1.2.0",
     "convict": "0.5.0",
-    "fxa-auth-db-server": "git://github.com/chilts/fxa-auth-db-server.git#reverse-with-tests"
+    "fxa-auth-db-server": "git://github.com/mozilla/fxa-auth-db-server.git#6cfba17c17"
   },
   "devDependencies": {
     "ass": "git://github.com/jrgm/ass.git#5be99ee",
