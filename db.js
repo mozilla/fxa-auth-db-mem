@@ -12,6 +12,7 @@ var keyFetchTokens = {}
 var accountResetTokens = {}
 var passwordChangeTokens = {}
 var passwordForgotTokens = {}
+var accountUnlockCodes = {}
 
 module.exports = function (log, error) {
 
@@ -24,6 +25,8 @@ module.exports = function (log, error) {
     data.createdAt = data.verifierSetAt = Date.now()
 
     data.devices = {}
+
+    data.lockedAt = null
 
     if ( accounts[uid] ) {
       return P.reject(error.duplicate())
@@ -380,7 +383,8 @@ module.exports = function (log, error) {
     return P.all([
       this.deletePasswordForgotToken(tokenId),
       this.createAccountResetToken(accountResetToken.tokenId, accountResetToken),
-      this.verifyEmail(accountResetToken.uid)
+      this.verifyEmail(accountResetToken.uid),
+      this.unlockAccount(accountResetToken.uid)
     ])
   }
 
@@ -394,6 +398,7 @@ module.exports = function (log, error) {
           deleteByUid(uid, accountResetTokens)
           deleteByUid(uid, passwordChangeTokens)
           deleteByUid(uid, passwordForgotTokens)
+          deleteByUid(uid, accountUnlockCodes)
 
           account.verifyHash = data.verifyHash
           account.authSalt = data.authSalt
@@ -416,6 +421,7 @@ module.exports = function (log, error) {
           deleteByUid(uid, accountResetTokens)
           deleteByUid(uid, passwordChangeTokens)
           deleteByUid(uid, passwordForgotTokens)
+          deleteByUid(uid, accountUnlockCodes)
 
           delete uidByNormalizedEmail[account.normalizedEmail]
           delete accounts[uid]
@@ -432,6 +438,40 @@ module.exports = function (log, error) {
           return {}
         }
       )
+  }
+
+  Memory.prototype.lockAccount = function (uid, data) {
+    return this.account(uid)
+      .then(
+        function (account) {
+          account.lockedAt = data.lockedAt
+          accountUnlockCodes[uid] = {
+            uid: uid,
+            unlockCode: data.unlockCode
+          }
+          return {}
+        }
+      )
+  }
+
+  Memory.prototype.unlockAccount = function (uid) {
+    return this.account(uid)
+      .then(
+        function (account) {
+          account.lockedAt = null
+          delete accountUnlockCodes[uid]
+          return {}
+        }
+      )
+  }
+
+  Memory.prototype.unlockCode = function (uid) {
+    var unlockCode = accountUnlockCodes[uid]
+    if (! unlockCode) {
+      return P.reject(error.notFound())
+    }
+
+    return P.resolve(unlockCode)
   }
 
   Memory.prototype.updatePasswordForgotToken = function (id, data) {
