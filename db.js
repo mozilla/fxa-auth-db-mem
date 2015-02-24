@@ -461,6 +461,12 @@ module.exports = function (log, error) {
           account.lockedAt = null
           delete accountUnlockCodes[uid]
           return {}
+        },
+        function(err) {
+          // The only error from this.account(uid) could be a 404 Not Found. We're masking
+          // this since the auth server firstly checks for an account prior to calling this
+          // so if we have stumbled here (without an account) we probably don't mind.
+          return {}
         }
       )
   }
