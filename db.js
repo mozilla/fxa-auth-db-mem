@@ -21,8 +21,6 @@ module.exports = function (log, error) {
   // CREATE
   Memory.prototype.createAccount = function (uid, data) {
     uid = uid.toString('hex')
-    data.normalizedEmail = data.email.toLowerCase()
-    data.createdAt = data.verifierSetAt = Date.now()
 
     data.devices = {}
 
@@ -403,7 +401,7 @@ module.exports = function (log, error) {
           account.verifyHash = data.verifyHash
           account.authSalt = data.authSalt
           account.wrapWrapKb = data.wrapWrapKb
-          account.verifierSetAt = Date.now()
+          account.verifierSetAt = data.verifierSetAt
           account.verifierVersion = data.verifierVersion
           account.devices = {}
           return []
