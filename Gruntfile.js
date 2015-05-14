@@ -10,7 +10,7 @@ module.exports = function (grunt) {
     copyright: {
       app: {
         src: [
-          "{,bin/,config/,db/,scripts/}*.js"
+          "{,bin/,config/,lib/,scripts/}*.js"
         ],
         options: {
           pattern: "This Source Code Form is subject to the terms of the Mozilla Public"
@@ -18,7 +18,7 @@ module.exports = function (grunt) {
       },
       tests: {
         src: [
-          'test/{remote,local,backend}/*.js'
+          'test/backend/*.js'
         ],
         options: {
           pattern: 'Any copyright is dedicated to the Public Domain.'
@@ -27,7 +27,7 @@ module.exports = function (grunt) {
     },
     jshint: {
       files: [
-        "{,bin/,config/,db/,scripts/,test/**/}*.{js,json}"
+        "{,bin/,config/,lib/,scripts/,test/**/}*.{js,json}"
       ],
       options: {
         jshintrc: ".jshintrc"
