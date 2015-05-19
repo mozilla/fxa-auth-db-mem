@@ -7,6 +7,7 @@ var P = require('bluebird')
 // our data stores
 var accounts = {}
 var uidByNormalizedEmail = {}
+var uidByPPP = {}
 var sessionTokens = {}
 var keyFetchTokens = {}
 var accountResetTokens = {}
@@ -32,6 +33,13 @@ module.exports = function (log, error) {
 
     if ( uidByNormalizedEmail[data.normalizedEmail] ) {
       return P.reject(error.duplicate())
+    }
+
+    if (data.ppp) {
+      if (uidByPPP[data.ppp]) {
+        return P.reject(error.duplicate())
+      }
+      uidByPPP[data.ppp] = uid
     }
 
     accounts[uid.toString('hex')] = data
@@ -246,6 +254,11 @@ module.exports = function (log, error) {
     return P.reject(error.notFound())
   }
 
+  Memory.prototype.pppRecord = function (ppp) {
+    var uid = uidByPPP[ppp.toString('utf8')]
+    return uid ? P.resolve(accounts[uid]) : P.reject(error.notFound())
+  }
+
   // sessionToken()
   //
   // Takes:
@@ -422,6 +435,7 @@ module.exports = function (log, error) {
           deleteByUid(uid, accountUnlockCodes)
 
           delete uidByNormalizedEmail[account.normalizedEmail]
+          delete uidByPPP[account.ppp]
           delete accounts[uid]
           return []
         }
