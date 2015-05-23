@@ -17,10 +17,7 @@
   "bugs": {
     "url": "https://github.com/mozilla/fxa-auth-db-mem/issues"
   },
-  "license": {
-    "name": "MPL 2.0",
-    "url": "https://raw.githubusercontent.com/mozilla/fxa-auth-db-mem/master/LICENSE"
-  },
+  "license": "MPL-2.0",
   "dependencies": {
     "bluebird": "2.2.2",
     "convict": "0.6.1",
