@@ -10,10 +10,10 @@ module.exports = function (grunt) {
     copyright: {
       app: {
         src: [
-          "{,bin/,config/,lib/,scripts/}*.js"
+          '{,bin/,config/,lib/,scripts/}*.js'
         ],
         options: {
-          pattern: "This Source Code Form is subject to the terms of the Mozilla Public"
+          pattern: 'This Source Code Form is subject to the terms of the Mozilla Public'
         }
       },
       tests: {
@@ -27,10 +27,10 @@ module.exports = function (grunt) {
     },
     jshint: {
       files: [
-        "{,bin/,config/,lib/,scripts/,test/**/}*.{js,json}"
+        '{,bin/,config/,lib/,scripts/,test/**/}*.{js,json}'
       ],
       options: {
-        jshintrc: ".jshintrc"
+        jshintrc: '.jshintrc'
       }
     }
   });
