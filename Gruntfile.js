@@ -4,7 +4,7 @@
 
 module.exports = function (grunt) {
 
-  require('load-grunt-tasks')(grunt);
+  require('load-grunt-tasks')(grunt)
 
   grunt.initConfig({
     copyright: {
@@ -25,15 +25,15 @@ module.exports = function (grunt) {
         }
       }
     },
-    jshint: {
-      files: [
-        '{,bin/,config/,lib/,scripts/,test/**/}*.{js,json}'
-      ],
+    eslint: {
       options: {
-        jshintrc: '.jshintrc'
-      }
+        eslintrc: '.eslintrc'
+      },
+      files: [
+        '{,bin/,config/,lib/,scripts/,test/**/}*.js'
+      ]
     }
-  });
+  })
 
-  grunt.registerTask('default', ['jshint', 'copyright']);
-};
+  grunt.registerTask('default', ['eslint', 'copyright'])
+}

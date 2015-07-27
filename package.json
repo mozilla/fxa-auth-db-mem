@@ -1,23 +1,11 @@
 {
   "name": "fxa-auth-db-mem",
-  "version": "0.33.0",
   "description": "Memory backend (for testing) for the fxa-auth-db-server",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mozilla/fxa-auth-db-mem"
-  },
-  "scripts": {
-    "test": "grunt && ./scripts/tap-coverage.js test/backend test/local",
-    "start": "node bin/server.js",
-    "outdated": "npm outdated --depth 0"
-  },
+  "version": "0.33.0",
   "author": "Mozilla (https://mozilla.org/)",
-  "homepage": "https://github.com/mozilla/fxa-auth-db-mem",
   "bugs": {
     "url": "https://github.com/mozilla/fxa-auth-db-mem/issues"
   },
-  "license": "MPL-2.0",
   "dependencies": {
     "bluebird": "2.2.2",
     "convict": "0.6.1",
@@ -26,11 +14,31 @@
   },
   "devDependencies": {
     "ass": "git://github.com/jrgm/ass.git#5be99ee",
+    "eslint-config-fxa": "1.8.0",
     "grunt": "0.4.5",
-    "grunt-contrib-jshint": "0.10.0",
     "grunt-copyright": "0.2.0",
+    "grunt-eslint": "16.0.0",
     "load-grunt-tasks": "0.6.0",
     "tap": "0.4.13"
   },
-  "keywords": [ "fxa", "firefox", "firefox-accounts", "backend", "storage", "memory" ]
+  "homepage": "https://github.com/mozilla/fxa-auth-db-mem",
+  "keywords": [
+    "fxa",
+    "firefox",
+    "firefox-accounts",
+    "backend",
+    "storage",
+    "memory"
+  ],
+  "license": "MPL-2.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mozilla/fxa-auth-db-mem"
+  },
+  "scripts": {
+    "outdated": "npm outdated --depth 0",
+    "start": "node bin/server.js",
+    "test": "grunt && ./scripts/tap-coverage.js test/backend test/local"
+  }
 }

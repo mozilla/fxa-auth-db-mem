@@ -19,7 +19,7 @@ module.exports = function (fs, path, url, convict) {
     port: {
       doc: 'The port the server should bind to',
       default: 8000,
-      format: 'nat',
+      format: 'port',
       env: 'PORT',
     },
     logging: {
