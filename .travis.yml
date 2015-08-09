@@ -6,6 +6,8 @@ node_js:
  - "iojs-v1"
  - "iojs-v2"
 
+sudo: false
+
 notifications:
   irc:
     channels:
